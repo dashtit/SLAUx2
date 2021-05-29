@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
-
+using System.Windows.Forms.VisualStyles;
 
 namespace WindowsFormsApplication1
 {
@@ -49,6 +49,7 @@ namespace WindowsFormsApplication1
             double[,] A = new double[n, n];
             double[] B = new double[n];
             double[] X = new double[n];
+            bool FLAG = true;
 
             for (int row = 0; row < dataGridView1.Rows.Count; row++)
                 for (int column = 0; column < dataGridView1.Columns.Count; column++) // это циклы на проверку пустых значений или букв
@@ -64,12 +65,14 @@ namespace WindowsFormsApplication1
                             MessageBox.Show("Введите все значения", "Поля с числовыми значениями пусты", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             Refresh(dataGridView1);
                             Refresh(dataGridView2);
+                            FLAG = false;
                         }
-                    }
+                    } 
                     catch (Exception ex)
                     {
                         dataGridView1.Rows[row].Cells[column].Value = "";
                         MessageBox.Show(ex.Message);
+                        FLAG = false;
                     }
 
             for (int row = 0; row < dataGridView2.Rows.Count; row++) //это та же самая проверка но для матрицы из datagridview2 там где свободные члены
@@ -84,6 +87,7 @@ namespace WindowsFormsApplication1
                         MessageBox.Show("Введите все значения", "Поля с числовыми значениями пусты", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         Refresh(dataGridView1);
                         Refresh(dataGridView2);
+                        FLAG = false;
                        
                     }
                 }
@@ -91,42 +95,97 @@ namespace WindowsFormsApplication1
                 {
                     dataGridView2.Rows[row].Cells[0].Value = "";
                     MessageBox.Show(ex.Message);
+                    FLAG = false; 
                 }
 
+            
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            bool flag = false;
+            int counter1 = 0;
+            int counter2 = 0;
             for (int i = 0; i < n; i++)
             {
-                for (int j = 0; j < n; j++)
-                    if (i == j)
-                    {
-                        SimpleIter.Div(ref A, ref B[i], A[i, j], i); // если прошло проверку отправляем считаться в simpleiter
-                        X[i] = B[i];
-                    }
+                if (A[n-1, n-1] == 0)
+                counter1++;
+            }
+            if (counter1 == n)
+            {
+                flag = true;
+            }
+            bool flag2 = false;
+            if (flag == true)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    if (B[n-1] == 0)
+                    counter2++;
+                }
+            }
+            if (counter2 == n)
+            {
+                flag2 = true;
             }
 
-            SimpleIter.Solve(A, B, ref X, eps); // считаем
-
-            Refresh(dataGridView3);
-
-            dataGridView3.Columns.Add("", ""); 
-
-            int accuracy = 0; 
-            while (eps < 1)
+            if (flag == true && flag2 == false && FLAG == true)
             {
-                eps *= 10;
-                accuracy++;
-            }
+                MessageBox.Show("Данная матрица решений не имеет", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Refresh(dataGridView3);
 
-            for (int row = 0; row < X.Length; row++) // здесь мы выводим рещультаты в третий датагрид 
-            {
-                
-                    dataGridView3.Rows.Add(); 
+                dataGridView3.Columns.Add("", "");
+
+                int accuracy = 0;
+                while (eps < 1)
+                {
+                    eps *= 10;
+                    accuracy++;
+                }
+
+                for (int row = 0; row < X.Length; row++) // здесь мы выводим рещультаты в третий датагрид 
+                {
+
+                    dataGridView3.Rows.Add();
                     dataGridView3.Rows[row].Cells[0].Value = Math.Round(X[row], accuracy);
-                
 
-
+                }
             }
+            else if (flag == true && flag2 == true && FLAG == true)
+                {
+                MessageBox.Show("Данная матрица имеет бесконечно много решений", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Refresh(dataGridView3);
+            } 
+            else
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                        if (i == j)
+                        {
+                            SimpleIter.Div(ref A, ref B[i], A[i, j], i); // если прошло проверку отправляем считаться в simpleiter
+                            X[i] = B[i];
+                        }
+                }
+                SimpleIter.Solve(A, B, ref X, eps); // считаем
+                Refresh(dataGridView3);
 
+                dataGridView3.Columns.Add("", "");
 
+                int accuracy = 0;
+                while (eps < 1)
+                {
+                    eps *= 10;
+                    accuracy++;
+                }
+
+                for (int row = 0; row < X.Length; row++) // здесь мы выводим рещультаты в третий датагрид 
+                {
+
+                    dataGridView3.Rows.Add();
+                    dataGridView3.Rows[row].Cells[0].Value = Math.Round(X[row], accuracy);
+
+                }
+            }
+          
+            /////////////////////////////////////////////////////////
         }
 
         private void Refresh(DataGridView dataGridView) // ф-ция которую будем вызывать при нажатии на копнку начать сначала
